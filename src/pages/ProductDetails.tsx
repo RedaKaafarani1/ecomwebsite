@@ -1,9 +1,8 @@
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShoppingBag } from 'lucide-react';
-import { products } from '../data/products';
-import { useCart } from '../context/CartContext';
-import { ImageCarousel } from '../components/ImageCarousel';
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { products } from "../data/products";
+import { useCart } from "../context/CartContext";
+import { ImageCarousel } from "../components/ImageCarousel";
 
 export function ProductDetails() {
   const { id } = useParams();
@@ -20,7 +19,10 @@ export function ProductDetails() {
   }
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      ...product,
+      images: product.images.map((url) => ({ image_url: url })),
+    });
   };
 
   return (
