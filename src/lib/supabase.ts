@@ -18,6 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     flowType: 'pkce',
     storage: window.localStorage,
     storageKey: 'supabase.auth.token',
+    // Use the deployed URL for password reset
     redirectTo: `${siteUrl}/reset-password`,
   },
 });

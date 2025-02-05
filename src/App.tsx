@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Mail, MessageCircle, User } from 'lucide-react';
+import { ShoppingBag, Mail, MessageCircle, User, Heart } from 'lucide-react';
 import { Home } from './pages/Home';
 import { ProductDetails } from './pages/ProductDetails';
 import { Cart } from './pages/Cart';
@@ -8,14 +8,18 @@ import { Profile } from './pages/Profile';
 import { ResetPassword } from './pages/ResetPassword';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SavedProductsProvider, useSavedProducts } from './context/SavedProductsContext';
 import { AuthModal } from './components/AuthModal';
+import { SavedItemsModal } from './components/SavedItemsModal';
 import ecomLogo from './ecomLogo.svg';
 
 function Header() {
   const { totalItems } = useCart();
+  const { savedProducts } = useSavedProducts();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSavedItemsModalOpen, setIsSavedItemsModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   
@@ -58,6 +62,20 @@ function Header() {
           </div>
           
           <div className="flex items-center gap-6 mt-8 sm:mt-0">
+            <button
+              onClick={() => setIsSavedItemsModalOpen(true)}
+              className="flex items-center gap-2 text-vitanic-dark-olive hover:text-vitanic-olive p-2 hover:bg-white/50 rounded-full transition-colors"
+            >
+              <div className="relative">
+                <Heart size={24} />
+                {savedProducts.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-vitanic-olive text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {savedProducts.length}
+                  </span>
+                )}
+              </div>
+            </button>
+
             <Link
               to="/cart"
               className="flex items-center gap-2 text-vitanic-dark-olive hover:text-vitanic-olive p-2 hover:bg-white/50 rounded-full transition-colors"
@@ -111,6 +129,7 @@ function Header() {
         </div>
       </div>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <SavedItemsModal isOpen={isSavedItemsModalOpen} onClose={() => setIsSavedItemsModalOpen(false)} />
     </header>
   );
 }
@@ -150,19 +169,21 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <div className="min-h-screen bg-leaves flex flex-col">
-            <Header />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-            </Routes>
-            <Footer />
-          </div>
-        </Router>
+        <SavedProductsProvider>
+          <Router>
+            <div className="min-h-screen bg-leaves flex flex-col">
+              <Header />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+              </Routes>
+              <Footer />
+            </div>
+          </Router>
+        </SavedProductsProvider>
       </CartProvider>
     </AuthProvider>
   );

@@ -1,21 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { supabase } from "../lib/supabase";
-import {
-  isValidPhone,
-  isValidName,
-  validateCustomerInfo,
-} from "../utils/validation";
-import {
-  User,
-  Save,
-  AlertCircle,
-  ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { PasswordResetForm } from "../components/PasswordResetForm";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
+import { isValidPhone, isValidName, validateCustomerInfo } from '../utils/validation';
+import { User, Save, AlertCircle, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PasswordResetForm } from '../components/PasswordResetForm';
+import { useNavigate } from 'react-router-dom';
 
 interface Order {
   id: number;
@@ -34,60 +23,56 @@ interface OrderItem {
 
 const ORDERS_PER_PAGE = 3;
 
-type Tab = "profile" | "orders";
+type Tab = 'profile' | 'orders';
 
 export function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState('');
   const [orders, setOrders] = useState<Order[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user) {
-      navigate("/", {
-        state: { message: "You have been signed out successfully" },
-      });
+      navigate('/', { state: { message: 'You have been signed out successfully' } });
       return;
     }
 
     async function loadProfile() {
-      if (!user) return;
       try {
         const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
           .single();
 
         if (error) throw error;
 
         if (data) {
           setProfile({
-            firstName: data.first_name || "",
-            lastName: data.last_name || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            address: data.address || "",
+            firstName: data.first_name || '',
+            lastName: data.last_name || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            address: data.address || '',
           });
         }
 
         // Fetch orders
         const { data: ordersData, error: ordersError } = await supabase
-          .from("orders")
-          .select(
-            `
+          .from('orders')
+          .select(`
             *,
             order_items (
               id,
@@ -95,16 +80,15 @@ export function Profile() {
               quantity,
               price
             )
-          `
-          )
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
         if (ordersError) throw ordersError;
 
         setOrders(ordersData || []);
       } catch (error) {
-        console.error("Error loading profile:", error);
+        console.error('Error loading profile:', error);
       } finally {
         setLoading(false);
       }
@@ -124,27 +108,27 @@ export function Profile() {
     }
 
     setSaving(true);
-    setSuccessMessage("");
+    setSuccessMessage('');
     setErrors({});
 
     try {
       const { error } = await supabase
-        .from("profiles")
+        .from('profiles')
         .update({
           first_name: profile.firstName,
           last_name: profile.lastName,
           phone: profile.phone,
           address: profile.address,
         })
-        .eq("id", user.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
-      setSuccessMessage("Profile updated successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      setSuccessMessage('Profile updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      console.error("Error updating profile:", error);
-      setErrors({ submit: "Failed to update profile. Please try again." });
+      console.error('Error updating profile:', error);
+      setErrors({ submit: 'Failed to update profile. Please try again.' });
     } finally {
       setSaving(false);
     }
@@ -158,11 +142,11 @@ export function Profile() {
   );
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+    setCurrentPage(prev => Math.min(prev + 1, totalPages - 1));
   };
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 0));
+    setCurrentPage(prev => Math.max(prev - 1, 0));
   };
 
   if (loading) {
@@ -179,22 +163,22 @@ export function Profile() {
         {/* Navigation Tabs */}
         <div className="flex border-b border-vitanic-pale-olive">
           <button
-            onClick={() => setActiveTab("profile")}
+            onClick={() => setActiveTab('profile')}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "profile"
-                ? "text-vitanic-olive border-b-2 border-vitanic-olive"
-                : "text-vitanic-dark-olive/60 hover:text-vitanic-dark-olive hover:bg-vitanic-pale-olive/20"
+              activeTab === 'profile'
+                ? 'text-vitanic-olive border-b-2 border-vitanic-olive'
+                : 'text-vitanic-dark-olive/60 hover:text-vitanic-dark-olive hover:bg-vitanic-pale-olive/20'
             }`}
           >
             <User size={20} />
             My Information
           </button>
           <button
-            onClick={() => setActiveTab("orders")}
+            onClick={() => setActiveTab('orders')}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "orders"
-                ? "text-vitanic-olive border-b-2 border-vitanic-olive"
-                : "text-vitanic-dark-olive/60 hover:text-vitanic-dark-olive hover:bg-vitanic-pale-olive/20"
+              activeTab === 'orders'
+                ? 'text-vitanic-olive border-b-2 border-vitanic-olive'
+                : 'text-vitanic-dark-olive/60 hover:text-vitanic-dark-olive hover:bg-vitanic-pale-olive/20'
             }`}
           >
             <ShoppingBag size={20} />
@@ -205,7 +189,7 @@ export function Profile() {
         {/* Tab Content */}
         <div className="p-8">
           {/* Profile Tab */}
-          <div className={activeTab === "profile" ? "block" : "hidden"}>
+          <div className={activeTab === 'profile' ? 'block' : 'hidden'}>
             <div className="space-y-8">
               {/* Profile Information Section */}
               <div>
@@ -214,12 +198,8 @@ export function Profile() {
                     <User className="w-8 h-8 text-vitanic-dark-olive" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-vitanic-dark-olive">
-                      My Profile
-                    </h1>
-                    <p className="text-vitanic-dark-olive/60">
-                      Manage your personal information
-                    </p>
+                    <h1 className="text-2xl font-bold text-vitanic-dark-olive">My Profile</h1>
+                    <p className="text-vitanic-dark-olive/60">Manage your personal information</p>
                   </div>
                 </div>
 
@@ -232,13 +212,9 @@ export function Profile() {
                       <input
                         type="text"
                         value={profile.firstName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, firstName: e.target.value })
-                        }
+                        onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
                         className={`w-full px-4 py-2 border rounded-md focus:ring-vitanic-olive focus:border-vitanic-olive transition-colors ${
-                          errors.firstName
-                            ? "border-red-500"
-                            : "border-vitanic-pale-olive"
+                          errors.firstName ? 'border-red-500' : 'border-vitanic-pale-olive'
                         }`}
                         required
                       />
@@ -257,13 +233,9 @@ export function Profile() {
                       <input
                         type="text"
                         value={profile.lastName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, lastName: e.target.value })
-                        }
+                        onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
                         className={`w-full px-4 py-2 border rounded-md focus:ring-vitanic-olive focus:border-vitanic-olive transition-colors ${
-                          errors.lastName
-                            ? "border-red-500"
-                            : "border-vitanic-pale-olive"
+                          errors.lastName ? 'border-red-500' : 'border-vitanic-pale-olive'
                         }`}
                         required
                       />
@@ -298,13 +270,9 @@ export function Profile() {
                     <input
                       type="tel"
                       value={profile.phone}
-                      onChange={(e) =>
-                        setProfile({ ...profile, phone: e.target.value })
-                      }
+                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                       className={`w-full px-4 py-2 border rounded-md focus:ring-vitanic-olive focus:border-vitanic-olive transition-colors ${
-                        errors.phone
-                          ? "border-red-500"
-                          : "border-vitanic-pale-olive"
+                        errors.phone ? 'border-red-500' : 'border-vitanic-pale-olive'
                       }`}
                       required
                     />
@@ -322,13 +290,9 @@ export function Profile() {
                     </label>
                     <textarea
                       value={profile.address}
-                      onChange={(e) =>
-                        setProfile({ ...profile, address: e.target.value })
-                      }
+                      onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                       className={`w-full px-4 py-2 border rounded-md focus:ring-vitanic-olive focus:border-vitanic-olive transition-colors ${
-                        errors.address
-                          ? "border-red-500"
-                          : "border-vitanic-pale-olive"
+                        errors.address ? 'border-red-500' : 'border-vitanic-pale-olive'
                       }`}
                       rows={3}
                       required
@@ -357,13 +321,13 @@ export function Profile() {
                     type="submit"
                     disabled={saving}
                     className={`w-full flex items-center justify-center gap-2 px-6 py-3 bg-vitanic-olive text-white rounded-md transition-all duration-200 ${
-                      saving
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-vitanic-dark-olive hover:shadow-md active:transform active:scale-[0.98]"
+                      saving 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-vitanic-dark-olive hover:shadow-md active:transform active:scale-[0.98]'
                     }`}
                   >
                     <Save size={20} />
-                    {saving ? "Saving..." : "Save Changes"}
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </button>
                 </form>
               </div>
@@ -373,26 +337,20 @@ export function Profile() {
           </div>
 
           {/* Orders Tab */}
-          <div className={activeTab === "orders" ? "block" : "hidden"}>
+          <div className={activeTab === 'orders' ? 'block' : 'hidden'}>
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 bg-vitanic-pale-olive rounded-full">
                 <ShoppingBag className="w-8 h-8 text-vitanic-dark-olive" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-vitanic-dark-olive">
-                  My Orders
-                </h2>
-                <p className="text-vitanic-dark-olive/60">
-                  View your order history
-                </p>
+                <h2 className="text-2xl font-bold text-vitanic-dark-olive">My Orders</h2>
+                <p className="text-vitanic-dark-olive/60">View your order history</p>
               </div>
             </div>
 
             {orders.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-vitanic-dark-olive/60">
-                  You haven't placed any orders yet.
-                </p>
+                <p className="text-vitanic-dark-olive/60">You haven't placed any orders yet.</p>
               </div>
             ) : (
               <div className="space-y-8">
@@ -423,19 +381,13 @@ export function Profile() {
                           <span>
                             {item.name} x{item.quantity}
                           </span>
-                          <span>
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </span>
+                          <span>${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                       <div className="mt-4 pt-4 border-t border-vitanic-pale-olive">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-vitanic-dark-olive">
-                            Total
-                          </span>
-                          <span className="font-semibold text-vitanic-olive">
-                            ${order.total.toFixed(2)}
-                          </span>
+                          <span className="font-semibold text-vitanic-dark-olive">Total</span>
+                          <span className="font-semibold text-vitanic-olive">${order.total.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
@@ -449,8 +401,8 @@ export function Profile() {
                       disabled={currentPage === 0}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                         currentPage === 0
-                          ? "text-vitanic-dark-olive/40 cursor-not-allowed"
-                          : "text-vitanic-dark-olive hover:bg-vitanic-pale-olive"
+                          ? 'text-vitanic-dark-olive/40 cursor-not-allowed'
+                          : 'text-vitanic-dark-olive hover:bg-vitanic-pale-olive'
                       }`}
                     >
                       <ChevronLeft size={20} />
@@ -464,8 +416,8 @@ export function Profile() {
                       disabled={currentPage === totalPages - 1}
                       className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                         currentPage === totalPages - 1
-                          ? "text-vitanic-dark-olive/40 cursor-not-allowed"
-                          : "text-vitanic-dark-olive hover:bg-vitanic-pale-olive"
+                          ? 'text-vitanic-dark-olive/40 cursor-not-allowed'
+                          : 'text-vitanic-dark-olive hover:bg-vitanic-pale-olive'
                       }`}
                     >
                       Next

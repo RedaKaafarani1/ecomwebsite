@@ -27,9 +27,9 @@ export function isValidPhone(phone: string): boolean {
 
 // Search query sanitization
 export function sanitizeSearchQuery(query: string): string {
-  // Only remove potentially harmful characters while keeping spaces
+  // Only allow alphanumeric characters and spaces
   return query
-    .replace(/[<>{}[\]\\\/]/g, '') // Remove potentially harmful characters
+    .replace(/[^a-zA-Z0-9\s]/g, '') // Remove all non-alphanumeric characters except spaces
     .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
 }
 

@@ -19,15 +19,45 @@ export function ResetPassword() {
   useEffect(() => {
     const handlePasswordReset = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Get the hash fragment from the URL
+        const hashFragment = window.location.hash;
+        const searchParams = new URLSearchParams(window.location.search);
         
-        if (!session) {
+        // Check for error parameters
+        const errorCode = searchParams.get('error_code');
+        const errorDescription = searchParams.get('error_description');
+        
+        if (errorCode || errorDescription) {
+          setError(errorDescription || 'Invalid reset password link. Please request a new one.');
+          setTimeout(() => navigate('/'), 3000);
+          return;
+        }
+
+        // Check for the code parameter
+        const code = searchParams.get('code');
+        
+        if (!code) {
           setError('Invalid reset password link. Please request a new one.');
           setTimeout(() => navigate('/'), 3000);
           return;
         }
+
+        // Verify the recovery code
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: code,
+          type: 'recovery'
+        });
+
+        if (verifyError) {
+          throw verifyError;
+        }
+
+        if (!data.session) {
+          throw new Error('No session found');
+        }
       } catch (error) {
-        setError('Failed to process password reset. Please try again.');
+        console.error('Password reset error:', error);
+        setError('Invalid or expired reset password link. Please request a new one.');
         setTimeout(() => navigate('/'), 3000);
       }
     };
