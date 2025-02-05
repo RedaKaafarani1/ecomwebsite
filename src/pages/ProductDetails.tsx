@@ -1,22 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingBag, Heart, Share2, Check, Info, Star, Truck, ShieldCheck, Leaf, TreePine, Droplets, FlaskRound as Flask } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { Product } from '../types';
-import { useCart } from '../context/CartContext';
-import { useSavedProducts } from '../context/SavedProductsContext';
-import { ImageCarousel } from '../components/ImageCarousel';
-import { SharePopup } from '../components/SharePopup';
-import { ReviewSection } from '../components/ReviewSection';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  ShoppingBag,
+  Heart,
+  Share2,
+  Check,
+  Info,
+  Star,
+  Truck,
+  ShieldCheck,
+  Leaf,
+  TreePine,
+  Droplets,
+  FlaskRound as Flask,
+} from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { Product } from "../types";
+import { useCart } from "../context/CartContext";
+import { useSavedProducts } from "../context/SavedProductsContext";
+import { ImageCarousel } from "../components/ImageCarousel";
+import { SharePopup } from "../components/SharePopup";
+import { ReviewSection } from "../components/ReviewSection";
+import { useAuth } from "../context/AuthContext";
 
-type Tab = 'description' | 'benefits' | 'ingredients' | 'reviews' | 'shipping';
+type Tab = "description" | "benefits" | "ingredients" | "reviews" | "shipping";
 
 const iconMap: Record<string, React.ElementType> = {
   Leaf,
   Star,
   TreePine,
   Droplets,
-  Flask
+  Flask,
 };
 
 export function ProductDetails() {
@@ -28,16 +43,18 @@ export function ProductDetails() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<Tab>('description');
+  const [activeTab, setActiveTab] = useState<Tab>("description");
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const { user } = useAuth();
 
-  const averageRating = product?.reviews?.length 
-    ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length 
+  const averageRating = product?.reviews?.length
+    ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+      product.reviews.length
     : 0;
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
   const fetchProduct = async () => {
@@ -45,8 +62,9 @@ export function ProductDetails() {
 
     try {
       const { data: productData, error: productError } = await supabase
-        .from('products')
-        .select(`
+        .from("products")
+        .select(
+          `
           *,
           images (
             image_url
@@ -73,16 +91,18 @@ export function ProductDetails() {
               description
             )
           )
-        `)
-        .eq('id', id)
+        `
+        )
+        .eq("id", id)
         .single();
 
       if (productError) throw productError;
 
       // Fetch reviews separately to handle the profiles relationship correctly
       const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select(`
+        .from("reviews")
+        .select(
+          `
           id,
           product_id,
           user_id,
@@ -94,9 +114,10 @@ export function ProductDetails() {
             first_name,
             last_name
           )
-        `)
-        .eq('product_id', id)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .eq("product_id", id)
+        .order("created_at", { ascending: false });
 
       if (reviewsError) throw reviewsError;
 
@@ -104,21 +125,25 @@ export function ProductDetails() {
         // Transform the nested data structure
         const transformedProduct = {
           ...productData,
-          tags: productData.product_tags?.map(pt => pt.tags) || [],
-          benefits: productData.product_benefits?.map(pb => pb.benefits) || [],
-          ingredients: productData.product_ingredients?.map(pi => pi.ingredients) || [],
-          images: productData.images?.map(img => img.image_url) || [],
-          reviews: reviewsData?.map(review => ({
-            ...review,
-            user: review.profiles
-          })) || []
+          tags: productData.product_tags?.map((pt) => pt.tags) || [],
+          benefits:
+            productData.product_benefits?.map((pb) => pb.benefits) || [],
+          ingredients:
+            productData.product_ingredients?.map((pi) => pi.ingredients) || [],
+          images: productData.images?.map((img) => img.image_url) || [],
+          reviews:
+            reviewsData?.map((review) => ({
+              ...review,
+              user: review.profiles,
+            })) || [],
         };
         setProduct(transformedProduct);
 
         // Fetch related products
         const { data: relatedData, error: relatedError } = await supabase
-          .from('products')
-          .select(`
+          .from("products")
+          .select(
+            `
             *,
             images (
               image_url
@@ -129,23 +154,24 @@ export function ProductDetails() {
                 name
               )
             )
-          `)
-          .neq('id', id)
+          `
+          )
+          .neq("id", id)
           .limit(4);
 
         if (relatedError) throw relatedError;
 
         if (relatedData) {
-          const transformedRelated = relatedData.map(product => ({
+          const transformedRelated = relatedData.map((product) => ({
             ...product,
-            tags: product.product_tags?.map(pt => pt.tags) || [],
-            images: product.images?.map(img => img.image_url) || []
+            tags: product.product_tags?.map((pt) => pt.tags) || [],
+            images: product.images?.map((img) => img.image_url) || [],
           }));
           setRelatedProducts(transformedRelated);
         }
       }
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error("Error fetching product:", error);
     } finally {
       setLoading(false);
     }
@@ -184,7 +210,7 @@ export function ProductDetails() {
     } else {
       addToSaved(product);
     }
-    
+
     setShowSaveMessage(true);
     setTimeout(() => setShowSaveMessage(false), 2000);
   };
@@ -195,14 +221,14 @@ export function ProductDetails() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'description':
+      case "description":
         return (
           <div className="prose prose-olive max-w-none">
             <p className="text-vitanic-dark-olive/80 leading-relaxed">
               {product.description}
             </p>
             <ul className="mt-6 space-y-2">
-              {product.tags?.map(tag => (
+              {product.tags?.map((tag) => (
                 <li key={tag.id} className="flex items-center gap-2">
                   <Check size={20} className="text-vitanic-olive" />
                   <span>{tag.name}</span>
@@ -211,13 +237,16 @@ export function ProductDetails() {
             </ul>
           </div>
         );
-      case 'benefits':
+      case "benefits":
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {product.benefits?.map(benefit => {
+            {product.benefits?.map((benefit) => {
               const IconComponent = iconMap[benefit.icon] || Leaf;
               return (
-                <div key={benefit.id} className="bg-vitanic-pale-olive/50 p-6 rounded-lg">
+                <div
+                  key={benefit.id}
+                  className="bg-vitanic-pale-olive/50 p-6 rounded-lg"
+                >
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <IconComponent className="text-vitanic-olive" size={20} />
                     {benefit.title}
@@ -230,20 +259,20 @@ export function ProductDetails() {
             })}
           </div>
         );
-      case 'ingredients':
+      case "ingredients":
         return (
           <div className="space-y-6">
             <p className="text-vitanic-dark-olive/80">
-              Our products are made with the finest natural ingredients, carefully
-              selected for their purity and effectiveness:
+              Our products are made with the finest natural ingredients,
+              carefully selected for their purity and effectiveness:
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-vitanic-pale-olive rounded-lg p-4">
                 <h4 className="font-semibold mb-2">Active Ingredients</h4>
                 <ul className="space-y-2 text-vitanic-dark-olive/80">
                   {product.ingredients
-                    ?.filter(ing => ing.type === 'active')
-                    .map(ingredient => (
+                    ?.filter((ing) => ing.type === "active")
+                    .map((ingredient) => (
                       <li key={ingredient.id} className="group relative">
                         • {ingredient.name}
                         {ingredient.description && (
@@ -259,8 +288,8 @@ export function ProductDetails() {
                 <h4 className="font-semibold mb-2">Additional Ingredients</h4>
                 <ul className="space-y-2 text-vitanic-dark-olive/80">
                   {product.ingredients
-                    ?.filter(ing => ing.type === 'additional')
-                    .map(ingredient => (
+                    ?.filter((ing) => ing.type === "additional")
+                    .map((ingredient) => (
                       <li key={ingredient.id} className="group relative">
                         • {ingredient.name}
                         {ingredient.description && (
@@ -275,7 +304,7 @@ export function ProductDetails() {
             </div>
           </div>
         );
-      case 'reviews':
+      case "reviews":
         return (
           <ReviewSection
             productId={product.id}
@@ -286,7 +315,7 @@ export function ProductDetails() {
             }}
           />
         );
-      case 'shipping':
+      case "shipping":
         return (
           <div className="space-y-6">
             <div className="flex items-start gap-4 p-4 bg-vitanic-pale-olive/50 rounded-lg">
@@ -294,7 +323,8 @@ export function ProductDetails() {
               <div>
                 <h4 className="font-semibold mb-1">Free Shipping</h4>
                 <p className="text-vitanic-dark-olive/80">
-                  Free shipping on orders over $50. Standard delivery within 3-5 business days.
+                  Free shipping on orders over $50. Standard delivery within 3-5
+                  business days.
                 </p>
               </div>
             </div>
@@ -303,7 +333,8 @@ export function ProductDetails() {
               <div>
                 <h4 className="font-semibold mb-1">Satisfaction Guaranteed</h4>
                 <p className="text-vitanic-dark-olive/80">
-                  We stand behind our products with a 30-day satisfaction guarantee.
+                  We stand behind our products with a 30-day satisfaction
+                  guarantee.
                 </p>
               </div>
             </div>
@@ -331,7 +362,7 @@ export function ProductDetails() {
               className="w-full aspect-square rounded-lg overflow-hidden"
             />
             <div className="flex justify-center gap-4">
-              {product.tags?.map(tag => (
+              {product.tags?.map((tag) => (
                 <div
                   key={tag.id}
                   className="px-4 py-2 bg-vitanic-pale-olive rounded-full text-sm text-vitanic-dark-olive"
@@ -357,10 +388,14 @@ export function ProductDetails() {
                 <div className="flex items-center gap-2">
                   <div className="flex items-center text-yellow-500">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star 
-                        key={star} 
-                        size={20} 
-                        fill={star <= Math.round(averageRating) ? 'currentColor' : 'none'}
+                      <Star
+                        key={star}
+                        size={20}
+                        fill={
+                          star <= Math.round(averageRating)
+                            ? "currentColor"
+                            : "none"
+                        }
                       />
                     ))}
                   </div>
@@ -403,15 +438,15 @@ export function ProductDetails() {
                   onClick={handleToggleSave}
                   className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
                     isProductSaved(product.id)
-                      ? 'bg-vitanic-olive text-white border-vitanic-olive hover:bg-vitanic-dark-olive hover:border-vitanic-dark-olive'
-                      : 'border-vitanic-pale-olive text-vitanic-dark-olive hover:bg-vitanic-pale-olive'
+                      ? "bg-vitanic-olive text-white border-vitanic-olive hover:bg-vitanic-dark-olive hover:border-vitanic-dark-olive"
+                      : "border-vitanic-pale-olive text-vitanic-dark-olive hover:bg-vitanic-pale-olive"
                   }`}
                 >
                   <Heart
                     size={20}
-                    fill={isProductSaved(product.id) ? 'currentColor' : 'none'}
+                    fill={isProductSaved(product.id) ? "currentColor" : "none"}
                   />
-                  {isProductSaved(product.id) ? 'Saved' : 'Save'}
+                  {isProductSaved(product.id) ? "Saved" : "Save"}
                 </button>
                 <button
                   onClick={handleShare}
@@ -435,14 +470,22 @@ export function ProductDetails() {
         <div className="border-t border-vitanic-pale-olive">
           <div className="p-8">
             <div className="flex flex-wrap gap-4 mb-8">
-              {(['description', 'benefits', 'ingredients', 'reviews', 'shipping'] as Tab[]).map((tab) => (
+              {(
+                [
+                  "description",
+                  "benefits",
+                  "ingredients",
+                  "reviews",
+                  "shipping",
+                ] as Tab[]
+              ).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-2 rounded-full transition-colors ${
                     activeTab === tab
-                      ? 'bg-vitanic-olive text-white'
-                      : 'text-vitanic-dark-olive hover:bg-vitanic-pale-olive'
+                      ? "bg-vitanic-olive text-white"
+                      : "text-vitanic-dark-olive hover:bg-vitanic-pale-olive"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -468,7 +511,7 @@ export function ProductDetails() {
               <Link
                 to={`/product/${relatedProduct.id}`}
                 className="block"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               >
                 <img
                   src={relatedProduct.images[0]}
@@ -510,9 +553,11 @@ export function ProductDetails() {
         <div className="fixed bottom-4 right-4 bg-vitanic-olive text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
           <Check size={20} />
           <span>
-            {isProductSaved(product.id)
-              ? 'Product saved successfully!'
-              : 'Product removed from saved items'}
+            {user
+              ? isProductSaved(product.id)
+                ? "Product saved successfully!"
+                : "Product removed from saved items"
+              : "Please Sign up/Login to save products"}
           </span>
         </div>
       )}
