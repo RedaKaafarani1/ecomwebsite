@@ -1,17 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Mail, MessageCircle, User, Heart } from 'lucide-react';
-import { Home } from './pages/Home';
-import { ProductDetails } from './pages/ProductDetails';
-import { Cart } from './pages/Cart';
-import { Profile } from './pages/Profile';
-import { ResetPassword } from './pages/ResetPassword';
-import { CartProvider, useCart } from './context/CartContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { SavedProductsProvider, useSavedProducts } from './context/SavedProductsContext';
-import { AuthModal } from './components/AuthModal';
-import { SavedItemsModal } from './components/SavedItemsModal';
-import ecomLogo from './ecomLogo.svg';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
+import { ShoppingBag, Mail, MessageCircle, User, Heart } from "lucide-react";
+import { Home } from "./pages/Home";
+import { ProductDetails } from "./pages/ProductDetails";
+import { Cart } from "./pages/Cart";
+import { Profile } from "./pages/Profile";
+import { ResetPassword } from "./pages/ResetPassword";
+import { CartProvider, useCart } from "./context/CartContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import {
+  SavedProductsProvider,
+  useSavedProducts,
+} from "./context/SavedProductsContext";
+import { AuthModal } from "./components/AuthModal";
+import { SavedItemsModal } from "./components/SavedItemsModal";
+import ecomLogo from "./ecomLogo.svg";
 
 function Header() {
   const { totalItems } = useCart();
@@ -22,16 +31,19 @@ function Header() {
   const [isSavedItemsModalOpen, setIsSavedItemsModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSignOut = async () => {
@@ -40,27 +52,27 @@ function Header() {
   };
 
   const handleProfileClick = () => {
-    navigate('/profile');
+    navigate("/profile");
     setIsUserMenuOpen(false);
   };
-  
+
   return (
-    <header className="bg-vitanic-pale-olive shadow-sm relative">
+    <header className="bg-vitanic-pale-olive shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
           <div className="w-full sm:w-auto flex justify-center">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="relative transform -mb-8 sm:-mb-12 z-10 transition-transform duration-200"
             >
-              <img 
-                src={ecomLogo} 
-                alt="Company Logo" 
+              <img
+                src={ecomLogo}
+                alt="Company Logo"
                 className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-white p-2 shadow-lg hover:scale-105 transition-all duration-200"
               />
             </Link>
           </div>
-          
+
           <div className="flex items-center gap-6 mt-8 sm:mt-0">
             <button
               onClick={() => setIsSavedItemsModalOpen(true)}
@@ -89,7 +101,7 @@ function Header() {
                 )}
               </div>
             </Link>
-            
+
             {user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
@@ -128,8 +140,14 @@ function Header() {
           </div>
         </div>
       </div>
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
-      <SavedItemsModal isOpen={isSavedItemsModalOpen} onClose={() => setIsSavedItemsModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
+      <SavedItemsModal
+        isOpen={isSavedItemsModalOpen}
+        onClose={() => setIsSavedItemsModalOpen(false)}
+      />
     </header>
   );
 }
@@ -139,9 +157,12 @@ function Footer() {
     <footer className="bg-vitanic-pale-olive border-t border-vitanic-olive/20 mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center space-y-6">
-          <h3 className="text-2xl font-semibold text-vitanic-dark-olive">Contact Us</h3>
+          <h3 className="text-2xl font-semibold text-vitanic-dark-olive">
+            Contact Us
+          </h3>
           <p className="text-vitanic-dark-olive/80 text-center max-w-md">
-            Have questions? We're here to help! Reach out to us through any of the following channels:
+            Have questions? We're here to help! Reach out to us through any of
+            the following channels:
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-8">
             <a
